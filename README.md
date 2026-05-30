@@ -2,7 +2,7 @@
 
 > **Automatically score, route, and follow up on every inbound lead — powered by AI. Zero manual work.**
 
-Built on **n8n + OpenAI + Google Workspace**. Three connected workflows that turn a form submission into a fully managed lead pipeline in under 30 seconds.
+Built on **n8n + Google + Google Workspace**. Three connected workflows that turn a form submission into a fully managed lead pipeline in under 30 seconds.
 
 ---
 
@@ -161,16 +161,18 @@ clientsense-lead-engine/
 
 I build custom n8n automation systems for freelancers, agencies, and small businesses.
 
-- 🔗 **Upwork:** [YOUR_UPWORK_PROFILE_LINK]
-- 🔗 **Contra:** [YOUR_CONTRA_PROFILE_LINK]
-- 💼 **LinkedIn:** [YOUR_LINKEDIN_URL]
-- 📧 **Email:** [YOUR_EMAIL]
+- 🔗 **Upwork:** [*Dhanraj Sharma*](https://www.upwork.com/freelancers/~010e4c7ac19e0fdda1?mp_source=share)
+- 🔗 **Contra:** [*Dhanraj Sharma*](https://contra.com/dhanraj_sharma_rgam8kpb?referralExperimentNid=DEFAULT_REFERRAL_PROGRAM&referrerUsername=dhanraj_sharma_rgam8kpb)
+- 💼 **LinkedIn:** [*Dhanraj Sharma*](https://www.linkedin.com/in/dhanraj-sharma-nddimension/)
+- 📧 **Email:** *hinatashoyo101824@gmail.com*
 
 ---
 
 ## 📄 License
 
-MIT — free to use, modify, and deploy for personal or commercial projects.
+This project is released under a proprietary license.
+
+The repository is provided for portfolio and evaluation purposes only. Commercial use, redistribution, resale, and client deployment are prohibited without explicit written permission from the author.
 
 ---
 
