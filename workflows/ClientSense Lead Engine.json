@@ -1,0 +1,802 @@
+{
+  "name": "ClientSense Lead Engine",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-intake",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -736,
+        -336
+      ],
+      "id": "f950e669-d043-449c-a5d8-57c029dfb3a4",
+      "name": "Webhook",
+      "webhookId": "8b76fdd3-f331-46df-b87a-ead70e8a3ca6"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Name: {{ $json.fullName }}\n\nCompany: {{ $json.companyOrProjectName }}\n\nBudget: {{ $json.budget }}\n\nTimeline: {{ $json.timeline }}\n\nProject Description:\n{{ $json.projectDescription }}\n\nHow they found me:\n{{ $json.howDidYouFindMe }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a lead qualification specialist for a freelance AI automation agency.  Given the lead information, return a JSON object with:  - score: integer from 1-10 - tier: \"hot\", \"warm\", or \"cold\" - reasoning: short explanation - personalized_opener: personalized first sentence for an email reply  Scoring rules: - Budget above $2000 = positive - Clear project scope = positive - Clear timeline = positive - Vague description = negative - Budget under $500 = strong negative  Return ONLY valid JSON. No markdown. No explanation."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -288,
+        -336
+      ],
+      "id": "dad71675-7af1-4928-9388-fb349f9f627c",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -288,
+        -112
+      ],
+      "id": "6bb406e4-17bc-4b57-8c70-7f5ce2884974",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "OSaTfNCOWIC6T282",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.Tier }}",
+                    "rightValue": "hot",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "c27c929a-4857-4adf-9c29-249f3d5a766a"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "7abe3c36-bcc0-4247-9920-651fd491cb9d",
+                    "leftValue": "={{ $json.Tier }}",
+                    "rightValue": "warm",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "640ac884-baaf-4cb2-80b3-96447aa0b2d4",
+                    "leftValue": "={{ $json.Tier }}",
+                    "rightValue": "cold",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        512,
+        -352
+      ],
+      "id": "815d0a93-189f-4c9b-bdae-2e5ad431030c",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1MNAcBiGE_ZDLR1Dgae6LZm12OsTtNbc4a0bRzchClRs",
+          "mode": "list",
+          "cachedResultName": "ClientSense-Sheets",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MNAcBiGE_ZDLR1Dgae6LZm12OsTtNbc4a0bRzchClRs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Priority Hot Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MNAcBiGE_ZDLR1Dgae6LZm12OsTtNbc4a0bRzchClRs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Full Name": "={{ $('Cleaning JSON').item.json.fullName }}",
+            "Email": "={{ $('Cleaning JSON').item.json.email }}",
+            "Company/Project Name": "={{ $('Cleaning JSON').item.json.companyOrProjectName }}",
+            "Budget": "={{ $('Cleaning JSON').item.json.budget }}",
+            "Timeline": "={{ $('Cleaning JSON').item.json.timeline }}",
+            "Submitted At": "={{ $('Cleaning JSON').item.json.submittedAt }}",
+            "Reasoning": "={{ $('AI Parsed Output').item.json.reasoning }}",
+            "Score": "={{ $('AI Parsed Output').item.json.score }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company/Project Name",
+              "displayName": "Company/Project Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Budget",
+              "displayName": "Budget",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timeline",
+              "displayName": "Timeline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reasoning",
+              "displayName": "Reasoning",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Submitted At",
+              "displayName": "Submitted At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        960,
+        -528
+      ],
+      "id": "bcb2ac90-0363-4f54-90a5-cde3176ee866",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Ud2BUA6JbcDAUUQU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $input.first().json.body.data;\nconst fields = payload.fields || [];\n\nconst getField = (label) => fields.find((f) => f.label === label);\n\nconst getValue = (label) => {\n  const field = getField(label);\n  if (!field) return \"\";\n  if (Array.isArray(field.value) && field.options) {\n    const selectedId = field.value[0];\n    const option = field.options.find((o) => o.id === selectedId);\n    return option ? option.text : selectedId;\n  }\n  return field.value ?? \"\";\n};\n\nreturn [\n  {\n    json: {\n      fullName: getValue(\"Full Name\"),\n      email: getValue(\"Email\"),\n      companyOrProjectName: getValue(\"Company/Project Name\"),\n      budget: getValue(\"Budget\"),\n      timeline: getValue(\"Timeline\"),\n      projectDescription: getValue(\"Project Description\"),\n      howDidYouFindMe: getValue(\"How did you find me?\"),\n      formName: payload.formName,\n      responseId: payload.responseId,\n      submittedAt: payload.createdAt,\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -512,
+        -336
+      ],
+      "id": "0335bc74-984a-409b-8791-11c4b39b3a2c",
+      "name": "Cleaning JSON"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.text;\nconst parsed = JSON.parse(raw);\n\nreturn [\n  {\n    json: parsed,\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        64,
+        -336
+      ],
+      "id": "12077386-01e2-41f5-a08b-362b65ba9d57",
+      "name": "AI Parsed Output"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Cleaning JSON').item.json.email }}",
+        "subject": "Let’s discuss your project 🚀",
+        "message": "={{ $json.personalized_opener }}<br><br>\nThanks for reaching out and sharing your project details.<br><br>\nYour project sounds like a strong fit for automation and modern web systems, and I’d love to explore it further with you.<br><br>\nYou can book a quick call here:<br>\nhttps://calendly.com/YOUR-LINK<br><br>\nLooking forward to speaking with you.<br><br>\nBest,<br>\nDhanraj",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        736,
+        -528
+      ],
+      "id": "00ed5534-b713-4528-b5de-6f811e5c5e83",
+      "name": "HOT Leads",
+      "webhookId": "d8f3b24c-ffee-4108-9ab4-94770514e082",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "A6FFkfQS7MjEIIdC",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Cleaning JSON').item.json.email }}",
+        "subject": "Thanks for your inquiry",
+        "message": "=Hi {{ $('Cleaning JSON').item.json.fullName }},<br><br>\nThanks for reaching out — we’ve received your inquiry and are reviewing it now.<br><br>\nWe’ll get back to you soon with next steps.<br><br>\nBest,<br>\nDhanraj",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        736,
+        -336
+      ],
+      "id": "3c41260d-e000-4b3d-97a5-2d65eb6be8fd",
+      "name": "WARM Leads",
+      "webhookId": "d8f3b24c-ffee-4108-9ab4-94770514e082",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "A6FFkfQS7MjEIIdC",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Cleaning JSON').item.json.email }}",
+        "subject": "Regarding your inquiry",
+        "message": "=Hi {{ $('Cleaning JSON').item.json.fullName }},<br><br>\n\nThank you for reaching out and sharing your project details.<br><br>\n\nAt the moment, I don’t think I’m the best fit for your current requirements, but I truly appreciate your interest and wish you the best with your project.<br><br>\n\nThanks again for considering me.<br><br>\n\nBest,<br>\nDhanraj",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        736,
+        -144
+      ],
+      "id": "e32ef9c1-3285-4b49-97f9-a7d089da4399",
+      "name": "COLD Leads",
+      "webhookId": "d8f3b24c-ffee-4108-9ab4-94770514e082",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "A6FFkfQS7MjEIIdC",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1MNAcBiGE_ZDLR1Dgae6LZm12OsTtNbc4a0bRzchClRs",
+          "mode": "list",
+          "cachedResultName": "ClientSense-Sheets",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MNAcBiGE_ZDLR1Dgae6LZm12OsTtNbc4a0bRzchClRs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 472754467,
+          "mode": "list",
+          "cachedResultName": "ALL Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MNAcBiGE_ZDLR1Dgae6LZm12OsTtNbc4a0bRzchClRs/edit#gid=472754467"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Full Name": "={{ $('Cleaning JSON').item.json.fullName }}",
+            "Email": "={{ $('Cleaning JSON').item.json.email }}",
+            "Company/Project Name": "={{ $('Cleaning JSON').item.json.companyOrProjectName }}",
+            "Budget": "={{ $('Cleaning JSON').item.json.budget }}",
+            "Timeline": "={{ $('Cleaning JSON').item.json.timeline }}",
+            "Submitted At": "={{ $('Cleaning JSON').item.json.submittedAt }}",
+            "Reasoning": "={{ $json.reasoning }}",
+            "Score": "={{ $json.score }}",
+            "Tier": "={{ $json.tier }}",
+            "Status": "Pending"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company/Project Name",
+              "displayName": "Company/Project Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Budget",
+              "displayName": "Budget",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timeline",
+              "displayName": "Timeline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tier",
+              "displayName": "Tier",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reasoning",
+              "displayName": "Reasoning",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Submitted At",
+              "displayName": "Submitted At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        288,
+        -336
+      ],
+      "id": "dc26a1f5-d607-4b77-8b78-5ab21fa73f14",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Ud2BUA6JbcDAUUQU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "hinatashoyo101824@gmail.com",
+          "mode": "list",
+          "cachedResultName": "hinatashoyo101824@gmail.com"
+        },
+        "start": "={{ new Date(Date.now() + 60 * 60 * 1000).toISOString() }}",
+        "end": "={{ new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString() }}",
+        "additionalFields": {
+          "description": "=Hot lead detected.  \nCompany: {{ $('Cleaning JSON').item.json.companyOrProjectName }}  \nBudget: {{ $('Cleaning JSON').item.json.budget }}  \nProject: {{ $('Cleaning JSON').item.json.projectDescription }}",
+          "summary": "=HOT LEAD Follow-up: {{ $('Cleaning JSON').item.json.fullName }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        1168,
+        -528
+      ],
+      "id": "e6715035-84d3-4e14-934b-0c054b6070a3",
+      "name": "Create an event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "6amLKesxFp7uqcfk",
+          "name": "Google Calendar account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "resolute-pentagram-paramedic.ngrok-free.dev",
+            "user-agent": "Tally Webhooks",
+            "content-length": "2396",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "baggage": "sentry-environment=production,sentry-release=008e855df2032d33adc5597b23fd44b7af1bfa85,sentry-public_key=6af4b6673f1648edaa8fef3f2ca43405,sentry-trace_id=516d88ff018b9a6d9c125799b8ae0a4a,sentry-org_id=407628",
+            "content-type": "application/json",
+            "sentry-trace": "516d88ff018b9a6d9c125799b8ae0a4a-7a3a7fe345a99e78",
+            "x-forwarded-for": "34.96.62.91",
+            "x-forwarded-host": "resolute-pentagram-paramedic.ngrok-free.dev",
+            "x-forwarded-proto": "https"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "eventId": "df4bf7ab-bc3f-4648-8007-dac1b2708fca",
+            "eventType": "FORM_RESPONSE",
+            "createdAt": "2026-05-28T13:20:59.726Z",
+            "data": {
+              "responseId": "bZlWRKe",
+              "submissionId": "bZlWRKe",
+              "respondentId": "7RpDyj2",
+              "formId": "Y5k5Xd",
+              "formName": "Work With ME!",
+              "createdAt": "2026-05-28T13:20:59.000Z",
+              "submissionPdfUrl": "https://api.tally.so/forms/Y5k5Xd/submissions/bZlWRKe/pdf?accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWJtaXNzaW9uSWQiOiJiWmxXUktlIiwiZm9ybUlkIjoiWTVrNVhkIiwiaWF0IjoxNzc5OTc0NDU5fQ.dAr4VqE0lHa0Aerf3kTxhPOQIBX7cH_usFn76Vp1omU&signature=9f26ca8fff25a2e5592ab6f26d36ee00a8198d450ec7ad718febe74cf78e4ebc",
+              "submissionPreviewUrl": "https://tally.so/forms/Y5k5Xd/submissions/bZlWRKe/preview?accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWJtaXNzaW9uSWQiOiJiWmxXUktlIiwiZm9ybUlkIjoiWTVrNVhkIiwiaWF0IjoxNzc5OTc0NDU5fQ.dAr4VqE0lHa0Aerf3kTxhPOQIBX7cH_usFn76Vp1omU&signature=9f26ca8fff25a2e5592ab6f26d36ee00a8198d450ec7ad718febe74cf78e4ebc",
+              "fields": [
+                {
+                  "key": "question_O0KyqM",
+                  "label": "Full Name",
+                  "type": "INPUT_TEXT",
+                  "value": "Sarah Mitchell"
+                },
+                {
+                  "key": "question_V8Xy76",
+                  "label": "Email",
+                  "type": "INPUT_EMAIL",
+                  "value": "sucksenapavanhacker@gmail.com"
+                },
+                {
+                  "key": "question_P0LyQx",
+                  "label": "Company/Project Name",
+                  "type": "INPUT_TEXT",
+                  "value": "BloomCraft Studio"
+                },
+                {
+                  "key": "question_E0eYV2",
+                  "label": "Budget",
+                  "type": "DROPDOWN",
+                  "value": [
+                    "7b627b59-410b-417c-b07b-1465dbd074dc"
+                  ],
+                  "options": [
+                    {
+                      "id": "4fbb22f4-8333-4be1-9d9d-bc6944b9aeb4",
+                      "text": "Under $500"
+                    },
+                    {
+                      "id": "7b627b59-410b-417c-b07b-1465dbd074dc",
+                      "text": "$500 - $2000"
+                    },
+                    {
+                      "id": "3b4b1123-b73c-4a61-8d7c-1ad30b85cf99",
+                      "text": "$2000 - $10000"
+                    },
+                    {
+                      "id": "5c6ca038-5231-4710-8219-1a2a1e0a56f9",
+                      "text": "$10000+"
+                    }
+                  ]
+                },
+                {
+                  "key": "question_rERW9X",
+                  "label": "Timeline",
+                  "type": "DROPDOWN",
+                  "value": [
+                    "64ec71dd-6351-4bcb-a2d2-6231cebeb948"
+                  ],
+                  "options": [
+                    {
+                      "id": "70809617-0528-4622-beba-a3e151648d7f",
+                      "text": "ASAP!"
+                    },
+                    {
+                      "id": "64ec71dd-6351-4bcb-a2d2-6231cebeb948",
+                      "text": "Within 1 month"
+                    },
+                    {
+                      "id": "d4da64dd-8aa4-40c6-b016-02e55aacbeca",
+                      "text": "Within 3 months"
+                    },
+                    {
+                      "id": "de67b718-efe0-4740-93b9-f2b1c32ff215",
+                      "text": "Just Exploring :)"
+                    }
+                  ]
+                },
+                {
+                  "key": "question_4jRd05",
+                  "label": "Project Description",
+                  "type": "TEXTAREA",
+                  "value": "We may need help improving our client onboarding and automating a few repetitive admin tasks, but we're still figuring out exactly what we need."
+                },
+                {
+                  "key": "question_jxX241",
+                  "label": "How did you find me?",
+                  "type": "INPUT_TEXT",
+                  "value": "Saw one of your posts on LinkedIn."
+                }
+              ]
+            }
+          },
+          "webhookUrl": "http://localhost:5678/webhook-test/lead-intake",
+          "executionMode": "test"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Cleaning JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "AI Parsed Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "HOT Leads",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WARM Leads",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "COLD Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cleaning JSON": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Parsed Output": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HOT Leads": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Create an event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "7cb96828-93b1-487d-8999-aab968d7c2ac",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "baa113419c606e36378168ae659b71b09b58fe0d79a3be90bb170cc1c0b4adaf"
+  },
+  "id": "pXmwXRzVRCfxPeT5",
+  "tags": []
+}
