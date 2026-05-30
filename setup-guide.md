@@ -11,7 +11,7 @@ Complete step-by-step instructions to import and configure all 3 workflows in yo
 Before starting, make sure you have:
 
 - [ ] An **n8n account** (cloud at n8n.io — starter plan works fine)
-- [ ] An **OpenAI account** with API key and at least $5 credit added
+- [ ] A **Google account** with API key
 - [ ] A **Google account** (for Sheets, Gmail, Calendar)
 - [ ] A **Tally.so account** (free tier is enough)
 
@@ -89,10 +89,10 @@ Go to your n8n dashboard → **Credentials** → Add the following:
 
 > **Tip:** In n8n cloud, you can use the built-in Google credential which handles OAuth automatically.
 
-### OpenAI API Key
-1. Click **Add Credential** → search "OpenAI"
-2. Paste your API key from [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
-3. Name it: `OpenAI Account`
+### Gemini API Key
+1. Click **Add Credential** → search "Gemini"
+2. Paste your API key from **Google AI Studio**
+3. Name it: `Gemini Account`
 
 ---
 
@@ -123,7 +123,7 @@ Open `ClientSense Lead Engine` workflow.
 4. Publish your Tally form
 
 ### 5b — Update the AI Agent System Prompt
-Click the **OpenAI** node (or AI Agent node). Replace the system prompt with:
+Click the **Gemini** node (or AI Agent node). Replace the system prompt with:
 
 ```
 You are a lead qualification specialist for a freelance AI automation agency.
@@ -228,8 +228,8 @@ Run these tests in order:
 
 ## Common Issues & Fixes
 
-**Problem:** OpenAI node returns an error about invalid JSON
-**Fix:** Add a Code node after OpenAI that strips any markdown formatting:
+**Problem:** Gemini node returns an error about invalid JSON
+**Fix:** Add a Code node after Gemini that strips any markdown formatting:
 ```javascript
 const raw = $input.first().json.content[0].text;
 const clean = raw.replace(/```json|```/g, '').trim();
